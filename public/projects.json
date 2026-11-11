@@ -1,0 +1,46 @@
+[
+  {
+    "id": "maple-cortado",
+    "title": "Maple oat cortado",
+    "type": "Espresso bar",
+    "year": "2025",
+    "description": "A double shot of our chocolatey house espresso, softened with silky oat milk and just a touch of local maple. Small, balanced, and very good company on a rainy morning.",
+    "image": "https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1400&q=85",
+    "imageAlt": "Freshly made coffee served in a ceramic cup",
+    "stack": ["House espresso", "Oat milk", "Local maple"],
+    "featured": true
+  },
+  {
+    "id": "guji-pourover",
+    "title": "Guji, slow poured",
+    "type": "Filter coffee",
+    "year": "2025",
+    "description": "A washed Ethiopia Guji brewed by hand to let its bright bergamot and peach notes come through. We pour it slow, serve it hot, and are always happy to talk you through the farm.",
+    "image": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1400&q=85",
+    "imageAlt": "Coffee and brewing ingredients arranged on a cafe counter",
+    "stack": ["Ethiopia Guji", "V60", "Bergamot · peach"],
+    "featured": true
+  },
+  {
+    "id": "honey-cardamom",
+    "title": "Honey & cardamom latte",
+    "type": "Seasonal special",
+    "year": "2025",
+    "description": "A cozy little twist on the everyday latte. We steep green cardamom into local wildflower honey, then pair it with espresso and silky steamed milk. Floral, gently sweet, never too much.",
+    "image": "https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&w=1400&q=85",
+    "imageAlt": "Coffee being prepared at a neighborhood cafe",
+    "stack": ["Wildflower honey", "Green cardamom", "Double espresso"],
+    "featured": true
+  },
+  {
+    "id": "house-batch",
+    "title": "The house batch",
+    "type": "Filter coffee",
+    "year": "2025",
+    "description": "A comforting, no-fuss cup brewed fresh through the day. This week it is a honey-processed coffee from Guatemala, with notes of cocoa, red apple, and the kind of sweetness that makes a second cup inevitable.",
+    "image": "https://images.unsplash.com/photo-1445116572660-236099ec97a0?auto=format&fit=crop&w=1400&q=85",
+    "imageAlt": "Warm neighborhood cafe ready for the morning coffee crowd",
+    "stack": ["Guatemala Huehuetenango", "Batch brew", "Cocoa · red apple"],
+    "featured": false
+  }
+]
