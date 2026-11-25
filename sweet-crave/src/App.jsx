@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { categories, defaultStock, deliveryOptions, products, socialPlatforms } from './data/catalog.js'
 import SiteHeader from './components/SiteHeader.jsx'
 import SiteFooter from './components/SiteFooter.jsx'
@@ -6,6 +6,7 @@ import ReviewsPage from './components/ReviewsPage.jsx'
 import ProductCard from './components/ProductCard.jsx'
 import ProductDetailsDialog from './components/ProductDetailsDialog.jsx'
 import PageCorners from './components/PageCorners.jsx'
+import { createReview, fetchStoreData, saveStockQuantity } from './data/api.js'
 import './App.css'
 
 const pageRoutes = ['home', 'shop', 'celebrations', 'about', 'stock', 'contact', 'reviews', 'support']
@@ -36,6 +37,7 @@ function App() {
       return defaultStock
     }
   })
+  const [hasLocalStock] = useState(() => Boolean(window.localStorage.getItem('halluamatt-stock') ?? window.localStorage.getItem('sweet-crave-stock')))
   const [cartOpen, setCartOpen] = useState(false)
   const [delivery, setDelivery] = useState('standard')
   const [payment, setPayment] = useState('mpesa')
@@ -51,6 +53,10 @@ function App() {
       return []
     }
   })
+  const [hasLocalReviews] = useState(() => Boolean(window.localStorage.getItem('halluamatt-reviews')))
+  const [apiStatus, setApiStatus] = useState('connecting')
+  const [migrationSnapshot] = useState(() => ({ hasLocalStock, stock, hasLocalReviews, reviews }))
+  const stockWriteTimers = useRef(new Map())
   const [reservationSent, setReservationSent] = useState(false)
   const [reservationConfirmation, setReservationConfirmation] = useState(null)
   const [reservationProduct, setReservationProduct] = useState(products[0].id)
@@ -77,12 +83,53 @@ function App() {
   const reservationDiscount = Math.round(reservationSubtotal * 0.1)
 
   useEffect(() => {
+    let active = true
+    async function loadSharedData() {
+      try {
+        const sharedData = await fetchStoreData()
+        let nextStock = Object.keys(sharedData.stock).length ? sharedData.stock : defaultStock
+        let nextReviews = sharedData.reviews
+        const needsMigration = window.localStorage.getItem('halluamatt-json-server-migrated') !== 'true'
+
+        if (needsMigration && migrationSnapshot.hasLocalStock) {
+          for (const [id, quantity] of Object.entries(migrationSnapshot.stock)) {
+            if (quantity !== defaultStock[id]) {
+              nextStock[id] = quantity
+              await saveStockQuantity(Number(id), quantity)
+            }
+          }
+        }
+        if (needsMigration && migrationSnapshot.hasLocalReviews && migrationSnapshot.reviews.length && !nextReviews.length) {
+          nextReviews = []
+          for (const review of migrationSnapshot.reviews) nextReviews.push(await createReview(review))
+        }
+        if (needsMigration) window.localStorage.setItem('halluamatt-json-server-migrated', 'true')
+
+        if (active) {
+          setStock(nextStock)
+          setReviews(nextReviews)
+          setApiStatus('online')
+        }
+      } catch {
+        if (active) setApiStatus('offline')
+      }
+    }
+    loadSharedData()
+    return () => { active = false }
+  }, [migrationSnapshot])
+
+  useEffect(() => {
     try {
       window.localStorage.setItem('halluamatt-stock', JSON.stringify(stock))
     } catch {
       return
     }
   }, [stock])
+
+  useEffect(() => () => {
+    stockWriteTimers.current.forEach((timer) => window.clearTimeout(timer))
+    stockWriteTimers.current.clear()
+  }, [])
 
   useEffect(() => {
     try {
@@ -128,6 +175,15 @@ function App() {
   function updateStock(productId, value) {
     const quantity = Math.max(0, Math.floor(Number(value) || 0))
     setStock((current) => ({ ...current, [productId]: quantity }))
+    if (apiStatus === 'online') {
+      const currentTimer = stockWriteTimers.current.get(productId)
+      if (currentTimer) window.clearTimeout(currentTimer)
+      stockWriteTimers.current.set(productId, window.setTimeout(() => {
+        saveStockQuantity(productId, quantity)
+          .catch(() => setApiStatus('offline'))
+          .finally(() => stockWriteTimers.current.delete(productId))
+      }, 350))
+    }
     setCart((current) => {
       const next = { ...current }
       if (quantity === 0) delete next[productId]
@@ -167,14 +223,18 @@ function App() {
   function submitFeedback(event) {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
-    setReviews((current) => [{
+    const submittedReview = {
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       name: String(formData.get('name')).trim(),
       rating: Number(formData.get('rating')),
       topic: String(formData.get('topic')),
       comment: String(formData.get('message')).trim(),
       date: new Date().toISOString(),
-    }, ...current])
+    }
+    setReviews((current) => [submittedReview, ...current])
+    if (apiStatus === 'online') {
+      createReview(submittedReview).catch(() => setApiStatus('offline'))
+    }
     setFeedbackSent(true)
     event.currentTarget.reset()
   }
@@ -233,7 +293,7 @@ function App() {
         </section>}
 
         {currentPage === 'stock' && <section className="inventory-section section-wrap" id="inventory">
-          <div className="inventory-heading"><div><p className="eyebrow"><span className="eyebrow-line" /> THE COUNTER, RIGHT NOW</p><h2>Today’s <em>stock list.</em></h2><p>Update the exact number available for each treat. Customers see the same count in the shop.</p></div><div className="stock-count"><strong>{availableCount}</strong><span>of {products.length}<br />on the menu</span></div></div>
+          <div className="inventory-heading"><div><p className="eyebrow"><span className="eyebrow-line" /> THE COUNTER, RIGHT NOW</p><h2>Today’s <em>stock list.</em></h2><p>Update the exact number available for each treat. Customers see the same count in the shop.</p><span className={`data-status ${apiStatus}`}><i />{apiStatus === 'online' ? 'Shared inventory connected' : apiStatus === 'connecting' ? 'Connecting to inventory' : 'Local preview · server unavailable'}</span></div><div className="stock-count"><strong>{availableCount}</strong><span>of {products.length}<br />on the menu</span></div></div>
           <div className="inventory-list">{products.map((product) => {
             const quantity = stock[product.id] ?? 0
             const available = quantity > 0
@@ -280,7 +340,7 @@ function App() {
             </div>
           </div>
         </section>}
-        {currentPage === 'reviews' && <ReviewsPage reviews={reviews} onNavigate={navigatePage} />}
+        {currentPage === 'reviews' && <ReviewsPage reviews={reviews} apiStatus={apiStatus} onNavigate={navigatePage} />}
       </main>
 
       <SiteFooter onNavigate={navigatePage} />

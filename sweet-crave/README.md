@@ -17,10 +17,19 @@ If you are developing a production application, we recommend using TypeScript wi
 
 ## HALLUAMATT source map
 
-Run the app with `npm install` and `npm run dev`. Validate changes with `npm run build` and `npm run lint`.
+Install dependencies with `npm install`, then start the app and data server in separate terminals:
+
+```sh
+npm run server
+npm run dev
+```
+
+JSON Server runs at `http://localhost:3001`; Vite proxies `/api` requests to it. Validate changes with `npm run build` and `npm run lint`.
 
 - `src/App.jsx` coordinates routes, cart, stock, customer reviews, reservations, and checkout state.
 - `src/data/catalog.js` is the shared product catalog with ingredients, allergen notes, calories, storage, and best-before guidance.
+- `src/data/api.js` loads and updates shared stock/review records through JSON Server.
+- `db.json` seeds the local API with product quantities and an empty reviews list.
 - `src/components/SiteHeader.jsx` contains page navigation, the Next-page button, and cart trigger.
 - `src/components/SiteFooter.jsx` contains shared footer navigation.
 - `src/components/ProductCard.jsx` displays products and stock-aware add controls.
@@ -32,4 +41,4 @@ Run the app with `npm install` and `npm run dev`. Validate changes with `npm run
 
 Routes: `/`, `/shop`, `/celebrations`, `/about`, `/stock`, `/contact`, `/reviews`, and `/support`.
 
-Stock and comments currently save in this browser only. To share them across customer devices, connect a backend. Product calorie, ingredient, allergen, and best-before details are estimates and must be confirmed against current recipes and labels. Payments and celebration requests are demos and are not submitted to payment or order services.
+When JSON Server is running, stock and reviews are shared by clients using that server. If it is unavailable, the app falls back to this browser's local storage. For a deployed site, set `VITE_API_BASE_URL` to a hosted API. JSON Server has no authentication and is for local development; do not expose it publicly for live inventory or customer data. Product calorie, ingredient, allergen, and best-before details are estimates and must be confirmed against current recipes and labels. Payments and celebration requests are demos and are not submitted to payment or order services.

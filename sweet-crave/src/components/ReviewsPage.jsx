@@ -2,7 +2,7 @@ function formatReviewDate(value) {
   return new Intl.DateTimeFormat('en-KE', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(value))
 }
 
-export default function ReviewsPage({ reviews, onNavigate }) {
+export default function ReviewsPage({ reviews, apiStatus, onNavigate }) {
   return (
     <section className="reviews-page section-wrap" aria-labelledby="reviews-title">
       <div className="reviews-heading">
@@ -23,7 +23,7 @@ export default function ReviewsPage({ reviews, onNavigate }) {
       ) : (
         <div className="reviews-empty"><span className="reviews-empty-stars" aria-hidden="true">★★★★★</span><h2>First bite, first review.</h2><p>Customer comments will appear here after they share a note on our Support page.</p><a className="primary-button" href="/support" onClick={(event) => onNavigate(event, 'support')}>Leave the first review <span aria-hidden="true">↗</span></a></div>
       )}
-      <p className="reviews-storage-note">Reviews currently save in this browser only. Connect a shared database to publish comments across customer devices.</p>
+      <p className={`reviews-storage-note ${apiStatus}`} role="status">{apiStatus === 'online' ? 'Reviews are syncing through the shared JSON Server.' : apiStatus === 'connecting' ? 'Connecting to the shared reviews server…' : 'JSON Server is unavailable. Reviews are saved in this browser until it reconnects.'}</p>
     </section>
   )
 }

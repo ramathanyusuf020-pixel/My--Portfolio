@@ -168,6 +168,10 @@ h2 { color: var(--green); font-family: var(--serif); font-size: 43px; font-weigh
 .stock-count { min-width: 103px; height: 66px; display: flex; align-items: center; justify-content: center; gap: 9px; border: 1px solid #d5bd85; color: #6b1936; background: linear-gradient(135deg, #fff5df, #f8e6e2); }
 .stock-count strong { font-family: var(--serif); font-size: 34px; line-height: 1; }
 .stock-count span { color: #846c5b; font-size: 8px; line-height: 1.35; }
+.data-status { margin-top: 9px; display: inline-flex; align-items: center; gap: 6px; color: #87766d; font-size: 8px; font-weight: 600; }
+.data-status i { width: 7px; height: 7px; border-radius: 50%; background: #d3a250; }
+.data-status.online i { background: #4a925b; }
+.data-status.offline i { background: #bb5652; }
 .inventory-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px; }
 .inventory-row { min-width: 0; min-height: 66px; display: grid; grid-template-columns: 9px minmax(0, 1fr) 92px auto; align-items: center; column-gap: 10px; border-bottom: 1px solid var(--line); }
 .availability-dot { width: 7px; height: 7px; border-radius: 50%; }
@@ -312,6 +316,8 @@ h2 { color: var(--green); font-family: var(--serif); font-size: 43px; font-weigh
 .reviews-empty p { margin: 0 auto 17px; color: #826b70; font-size: 10px; }
 .reviews-empty .primary-button { min-height: 40px; }
 .reviews-storage-note { margin: 17px 0 0; color: #98837f; font-size: 8px; line-height: 1.5; }
+.reviews-storage-note.online { color: #54805a; }
+.reviews-storage-note.offline { color: #a45b4e; }
 .page-frame { position: relative; isolation: isolate; min-height: calc(100svh - 190px); }
 .page-corners { position: absolute; z-index: 3; inset: 0; overflow: hidden; pointer-events: none; }
 .page-corner { position: absolute; width: 44px; height: 44px; display: block; }
